@@ -1,0 +1,265 @@
+
+> skillnest-lms@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 8.6s
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 1569ms (141 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 12.2s (622 modules)
+ ✓ Compiled in 1425ms (283 modules)
+ GET / 200 in 360ms
+ ○ Compiling /list/teachers ...
+ ✓ Compiled /list/teachers in 8.2s (1533 modules)
+ GET /list/teachers 200 in 10756ms
+ ○ Compiling /teacher ...
+ ✓ Compiled /teacher in 7.1s (2394 modules)
+ ○ Compiling /list/teachers/[id] ...
+ ✓ Compiled /list/teachers/[id] in 8.5s (2971 modules)
+ ✓ Compiled /teacher in 425ms (1689 modules)
+   Reload env: .env
+ ✓ Compiled in 6.4s (2408 modules)
+ ○ Compiling /playground ...
+ ✓ Compiled /playground in 11s (2299 modules)
+ GET /playground 200 in 4567ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 18s (913 modules)
+ GET /favicon.ico 200 in 20157ms
+ ✓ Compiled in 3.2s (2299 modules)
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ GET /playground 500 in 5129ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 752ms (2299 modules)
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ GET /playground 500 in 5425ms
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ GET /playground 500 in 5294ms
+ ✓ Compiled /favicon.ico in 252ms (913 modules)
+ GET /favicon.ico 200 in 481ms
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ GET /playground 500 in 5148ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 2.1s (2299 modules)
+ GET /playground 200 in 1063ms
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ GET /playground 500 in 6114ms
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ GET /playground 500 in 5084ms
+ ○ Compiling /favicon.ico ...
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled /favicon.ico in 983ms (2329 modules)
+ GET /favicon.ico 200 in 1054ms
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ GET /playground 500 in 5438ms
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ GET /playground 500 in 5061ms
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ ⨯ PrismaClientKnownRequestError: 
+Invalid `prisma.teacher.findUnique()` invocation:
+
+
+Can't reach database server at `localhost:5433`
+
+Please make sure your database server is running at `localhost:5433`.
+    at async Menu (./src/components/Menu.tsx:365:69)
+digest: "214734986"
+ GET /playground 500 in 5125ms
+ GET /favicon.ico 200 in 36ms

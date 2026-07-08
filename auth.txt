@@ -1,0 +1,5 @@
+
+Username	Password	    Lands on
+admin1	    password123	    Admin dashboard (welcome banner, Learners/Instructors/Guardians cards, Platform Stats / Session Attendance / Revenue Overview charts)
+teacher1	password123	    Instructor view
+student1	password123	    Learner view

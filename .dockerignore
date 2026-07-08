@@ -1,0 +1,12 @@
+node_modules
+.next
+.env
+.env*.local
+.git
+.gitignore
+*.md
+*.txt
+*.pdf
+public/upload/
+.playwright-mcp/
+docs/

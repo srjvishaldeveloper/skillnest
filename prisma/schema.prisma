@@ -1,0 +1,932 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id       String  @id
+  username String  @unique
+  password String  @default("")
+  isSuper  Boolean @default(false)
+
+  bankDetail     AdminBankDetail?
+  payoutApprovals WithdrawalRequest[] @relation("ApprovedBy")
+}
+
+model AdminBankDetail {
+  id                Int     @id @default(autoincrement())
+  upiId             String?
+  bankName          String?
+  accountNumber     String?
+  ifsc              String?
+  accountHolderName String?
+
+  adminId String @unique
+  admin   Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+}
+
+enum WithdrawalStatus {
+  PENDING
+  PROCESSED
+  REJECTED
+}
+
+model WithdrawalRequest {
+  id               Int              @id @default(autoincrement())
+  amount           Int              // gross amount requested (sum of order amounts)
+  platformFeePercent Int            @default(10)
+  platformFee      Int              // fee deducted
+  netAmount        Int              // amount - fee
+  status           WithdrawalStatus @default(PENDING)
+  billUrl          String?          // link to generated bill PDF/image
+  notes            String?
+  createdAt        DateTime         @default(now())
+  processedAt      DateTime?
+  processedById    String?
+  processedBy      Admin?           @relation("ApprovedBy", fields: [processedById], references: [id])
+
+  parentApproved   Boolean    @default(false)
+  paidToSubAt      DateTime?
+
+  teacherId String
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  courseId  Int?    // null = withdrawal for all courses, set = per-course withdrawal
+  course    Course? @relation(fields: [courseId], references: [id])
+}
+
+enum OrgPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model Otp {
+  id        Int      @id @default(autoincrement())
+  phone     String   @unique
+  code      String // bcrypt hash of the OTP
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Organization {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  plan      OrgPlan  @default(FREE)
+  createdAt DateTime @default(now())
+
+  teachers Teacher[]
+  students Student[]
+}
+
+model Affiliate {
+  id             String   @id
+  username       String   @unique
+  name           String
+  email          String?  @unique
+  password       String   @default("")
+  code           String   @unique
+  commissionRate Int      @default(20) // percent of each sale
+  createdAt      DateTime @default(now())
+
+  referrals AffiliateReferral[]
+}
+
+model AffiliateReferral {
+  id         Int      @id @default(autoincrement())
+  commission Int      @default(0) // rupees earned
+  courseId   Int?
+  orderId    Int?
+  createdAt  DateTime @default(now())
+
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+}
+
+model Student {
+  id          String       @id
+  username    String       @unique
+  name        String
+  email       String?      @unique
+  phone       String?      @unique
+  address     String       @default("")
+  img         String?
+  bloodType   String       @default("")
+  sex         UserSex?
+  createdAt   DateTime     @default(now())
+  // School-LMS legacy links — optional so SSO-provisioned marketplace learners
+  // (JobNest job seekers) can exist as Students without a parent/class/grade.
+  parentId    String?
+  parent      Parent?      @relation(fields: [parentId], references: [id])
+  classId     Int?
+  class       Class?       @relation(fields: [classId], references: [id])
+  gradeId     Int?
+  grade       Grade?       @relation(fields: [gradeId], references: [id])
+  attendances Attendance[]
+  results     Result[]
+  birthday    DateTime?
+  password    String       @default("")
+  enrollments    Enrollment[]
+  lessonProgress LessonProgress[]
+  reviews        Review[]
+  wishlist       Wishlist[]
+  cart           Cart[]
+  cartCheckouts  CartCheckout[]
+  quizAttempts   QuizAttempt[]
+  certificates   Certificate[]
+  orders         Order[]
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  liveAttendances LiveAttendance[]
+  userStats       UserStats?
+  badges          UserBadge[]
+  codingSubmissions CodingSubmission[]
+  codingStreaks   CodingStreak[]
+  dailyChallenges DailyChallenge[]
+}
+
+model Teacher {
+  id        String    @id
+  username  String    @unique
+  name      String
+  email     String?   @unique
+  phone     String?   @unique
+  address   String
+  img       String?
+  bloodType String
+  sex       UserSex
+  createdAt DateTime  @default(now())
+  isVerified Boolean  @default(false)
+  verifiedAt DateTime?
+  subjects  Subject[]
+  lessons   Lesson[]
+  classes   Class[]
+  birthday  DateTime
+  password  String    @default("")
+  courses   Course[]
+  onboardingComplete Boolean @default(false)
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  parentTeacherId String?
+  parentTeacher   Teacher?  @relation("TeacherHierarchy", fields: [parentTeacherId], references: [id])
+  subTeachers     Teacher[] @relation("TeacherHierarchy")
+  inviteLinks      TeacherInviteLink[] @relation("OwnerLinks")
+  invitedByLinkId  Int?
+  invitedByLink    TeacherInviteLink? @relation("InvitedViaLink", fields: [invitedByLinkId], references: [id])
+  accountHolderName String?
+  bankName         String?
+  accountNumber    String?
+  ifsc             String?
+  upiId            String?
+  panNumber        String?
+  aadharNumber     String?
+  certificateUrl   String?
+
+  withdrawalRequests WithdrawalRequest[]
+}
+
+model TeacherInviteLink {
+  id        Int      @id @default(autoincrement())
+  teacherId String?
+  teacher   Teacher? @relation("OwnerLinks", fields: [teacherId], references: [id], onDelete: Cascade)
+  code      String   @unique
+  maxUses   Int      @default(50)
+  useCount  Int      @default(0)
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  invitedTeachers Teacher[] @relation("InvitedViaLink")
+}
+
+model Parent {
+  id        String    @id
+  username  String    @unique
+  name      String
+  email     String?   @unique
+  phone     String    @unique
+  address   String
+  createdAt DateTime  @default(now())
+  students  Student[]
+  password  String    @default("")
+}
+
+model Grade {
+  id    Int @id @default(autoincrement())
+  level Int @unique
+
+  students Student[]
+  classess Class[]
+}
+
+model Class {
+  id       Int    @id @default(autoincrement())
+  name     String @unique
+  capacity Int
+  year     Int?
+  price    Int    @default(4999)
+
+  supervisorId  String?
+  supervisor    Teacher?       @relation(fields: [supervisorId], references: [id])
+  lessons       Lesson[]
+  students      Student[]
+  gradeId       Int
+  grade         Grade          @relation(fields: [gradeId], references: [id])
+  events        Event[]
+  announcements Announcement[]
+}
+
+model Subject {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  teachers Teacher[]
+  lessons  Lesson[]
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  name      String
+  day       Day
+  startTime DateTime
+  endTime   DateTime
+
+  subjectId   Int
+  subject     Subject      @relation(fields: [subjectId], references: [id])
+  classId     Int
+  class       Class        @relation(fields: [classId], references: [id])
+  teacherId   String
+  teacher     Teacher      @relation(fields: [teacherId], references: [id])
+  exams       Exam[]
+  assignments Assignment[]
+  attendances Attendance[]
+}
+
+model Exam {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startTime DateTime
+  endTime   DateTime
+  notes     String?
+  pdfUrl    String?
+
+  lessonId Int
+  lesson   Lesson   @relation(fields: [lessonId], references: [id])
+  results  Result[]
+}
+
+model Assignment {
+  id        Int      @id @default(autoincrement())
+  title     String
+  startDate DateTime
+  dueDate   DateTime
+
+  lessonId Int
+  lesson   Lesson   @relation(fields: [lessonId], references: [id])
+  results  Result[]
+}
+
+model Result {
+  id    Int @id @default(autoincrement())
+  score Int
+
+  examId       Int?
+  exam         Exam?       @relation(fields: [examId], references: [id])
+  assignmentId Int?
+  assignment   Assignment? @relation(fields: [assignmentId], references: [id])
+  studentId    String
+  student      Student     @relation(fields: [studentId], references: [id])
+}
+
+model Attendance {
+  id      Int      @id @default(autoincrement())
+  date    DateTime
+  present Boolean
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+  lessonId  Int
+  lesson    Lesson  @relation(fields: [lessonId], references: [id])
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+
+  classId Int?
+  class   Class? @relation(fields: [classId], references: [id])
+}
+
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  date        DateTime
+
+  classId Int?
+  class   Class? @relation(fields: [classId], references: [id])
+
+  authorId   String?
+  authorRole String?
+  authorName String?
+}
+
+enum UserSex {
+  MALE
+  FEMALE
+}
+
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}
+
+// ===================== Coding Platform Enums =====================
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum Rank {
+  BEGINNER
+  LEARNER
+  SOLVER
+  ADVANCED
+  EXPERT
+  MASTER
+  GRANDMASTER
+}
+
+enum SubmissionStatus {
+  PENDING
+  AC
+  WA
+  TLE
+  RE
+  CE
+}
+
+// ===================== SkillNest LMS: Course Content =====================
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  REJECTED
+}
+
+model Course {
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String      @default("")
+  category    String      @default("General")
+  level       CourseLevel @default(BEGINNER)
+  price       Int         @default(0)
+  img         String?
+  trailerUrl  String?
+  outcomes    String[]    @default([])
+  published        Boolean      @default(false)
+  courseCompleted  Boolean      @default(false)  // Teacher marks true when course content is finalized
+  status           CourseStatus @default(DRAFT)
+  reviewNote    String?
+  qualityScore  Int?       // Auto-calculated 0–100 quality score
+  qualityNotes  String?    // JSON string: ScoreBreakdown (per-dimension reasons)
+  createdAt     DateTime   @default(now())
+
+  platformFeePercent Int @default(0)
+  maxStudents Int?
+
+  instructorId String
+  instructor   Teacher @relation(fields: [instructorId], references: [id])
+
+  modules     Module[]
+  enrollments Enrollment[]
+  reviews     Review[]
+  wishlists   Wishlist[]
+  cart        Cart[]
+  quizzes     Quiz[]
+  certificates Certificate[]
+  discussions Discussion[]
+  orders      Order[]
+  liveClasses LiveClass[]
+  faqs        CourseFaq[]
+  courseSkills CourseSkill[]
+  withdrawalRequests WithdrawalRequest[]
+  chatMessages        ChatMessage[]
+}
+
+model LiveClass {
+  id           Int      @id @default(autoincrement())
+  title        String
+  scheduledAt  DateTime
+  durationMin  Int      @default(60)
+  meetingUrl   String // Jitsi room URL
+  recordingUrl String?
+  createdAt    DateTime @default(now())
+
+  courseId     Int
+  course       Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructorId String
+
+  attendances LiveAttendance[]
+}
+
+model LiveAttendance {
+  id       Int      @id @default(autoincrement())
+  joinedAt DateTime @default(now())
+
+  liveClassId Int
+  liveClass   LiveClass @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([liveClassId, studentId])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  merchantTxnId String      @unique
+  baseAmount    Int // course price in rupees
+  amount        Int // final amount after coupon, in rupees
+  status        OrderStatus @default(PENDING)
+  couponCode    String?
+  referralCode  String?
+  phonepeTxnId  String?
+
+  // manual payment fields
+  paymentMethod     String?   @default("PHONEPE") // PHONEPE | BANK_TRANSFER
+  paymentProof      String?   // screenshot/receipt URL for manual payments
+  paymentConfirmedAt DateTime?
+  paymentConfirmedBy String?
+
+  createdAt     DateTime    @default(now())
+  paidAt        DateTime?
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  Int
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Coupon {
+  id         Int       @id @default(autoincrement())
+  code       String    @unique
+  percentOff Int        @default(0) // 0-100
+  active     Boolean    @default(true)
+  expiresAt  DateTime?
+  maxUses    Int? // null = unlimited
+  usedCount  Int        @default(0)
+  createdAt  DateTime   @default(now())
+}
+
+model Discussion {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // denormalized author (no single User table in this schema)
+  authorId   String
+  authorRole String
+  authorName String
+
+  replies DiscussionReply[]
+}
+
+model DiscussionReply {
+  id        Int      @id @default(autoincrement())
+  body      String
+  createdAt DateTime @default(now())
+
+  discussionId Int
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+
+  authorId   String
+  authorRole String
+  authorName String
+}
+
+model Certificate {
+  id       Int      @id @default(autoincrement())
+  code     String   @unique
+  issuedAt DateTime @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  Int
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+}
+
+model Quiz {
+  id           Int      @id @default(autoincrement())
+  title        String
+  description  String   @default("")
+  passingScore Int      @default(60) // percent needed to pass
+  createdAt    DateTime @default(now())
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  questions Question[]
+  attempts  QuizAttempt[]
+}
+
+model Question {
+  id    Int    @id @default(autoincrement())
+  text  String
+  order Int    @default(0)
+
+  quizId Int
+  quiz   Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  options Option[]
+}
+
+model Option {
+  id        Int     @id @default(autoincrement())
+  text      String
+  isCorrect Boolean @default(false)
+  order     Int     @default(0)
+
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model QuizAttempt {
+  id        Int      @id @default(autoincrement())
+  score     Int // number of correct answers
+  total     Int // total questions
+  passed    Boolean
+  answers   Json? // { [questionId]: optionId }
+  createdAt DateTime @default(now())
+
+  quizId    Int
+  quiz      Quiz    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int      @default(5)
+  comment   String   @default("")
+  createdAt DateTime @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  Int
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+}
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  Int
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+}
+
+model Cart {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  Int
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+}
+
+model CartCheckout {
+  id            Int      @id @default(autoincrement())
+  merchantTxnId String   @unique
+  studentId     String
+  totalAmount   Int
+  status        String   @default("PENDING")
+  couponCode    String?
+  createdAt     DateTime @default(now())
+  paidAt        DateTime?
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  items   CartCheckoutItem[]
+}
+
+model CartCheckoutItem {
+  id       Int  @id @default(autoincrement())
+  courseId Int
+  amount   Int
+  courseTitle String @default("")
+
+  checkoutId Int
+  checkout   CartCheckout @relation(fields: [checkoutId], references: [id], onDelete: Cascade)
+
+  @@unique([checkoutId, courseId])
+}
+
+model Module {
+  id    Int    @id @default(autoincrement())
+  title String
+  order Int    @default(0)
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  lessons CourseLesson[]
+}
+
+model CourseLesson {
+  id          Int     @id @default(autoincrement())
+  title       String
+  order       Int     @default(0)
+  videoUrl    String?
+  pdfUrl      String?
+  content     String  @default("")
+  duration    Int     @default(0)
+  isPreview   Boolean @default(false)
+  summary     String? // AI-generated summary of the lesson/video content
+  challengeId Int?
+  challenge   Problem? @relation(fields: [challengeId], references: [id])
+
+  moduleId Int
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  progress LessonProgress[]
+}
+
+model Enrollment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseId  Int
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+}
+
+model LessonProgress {
+  id          Int       @id @default(autoincrement())
+  completed   Boolean   @default(true)
+  completedAt DateTime  @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lessonId  Int
+  lesson    CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, lessonId])
+}
+
+model CourseFaq {
+  id        Int      @id @default(autoincrement())
+  question  String
+  answer    String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+// ===================== Coding Practice Platform =====================
+
+model Problem {
+  id          Int        @id @default(autoincrement())
+  slug        String     @unique
+  title       String
+  description String     @default("")
+  difficulty  Difficulty @default(EASY)
+  constraints String     @default("")
+  hints       String     @default("")
+  starterCode Json?
+  timeLimit   Int        @default(2)
+  memoryLimit Int        @default(256)
+  isPremium   Boolean    @default(false)
+  published   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+
+  testCases          TestCase[]
+  tags               ProblemTag[]
+  submissions        CodingSubmission[]
+  contestProblems    ContestProblem[]
+  dailyChallenges    DailyChallenge[]
+  codingStreaks      CodingStreak[]
+  linkedLessons      CourseLesson[]
+
+  @@index([slug])
+  @@index([difficulty, published])
+}
+
+model TestCase {
+  id             Int    @id @default(autoincrement())
+  input          String
+  expectedOutput String
+  isSample       Boolean @default(false)
+  order          Int     @default(0)
+
+  problemId Int
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  problems ProblemTag[]
+}
+
+model ProblemTag {
+  problemId Int
+  tagId     Int
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, tagId])
+}
+
+model CodingSubmission {
+  id        Int              @id @default(autoincrement())
+  code      String
+  language  String
+  status    SubmissionStatus @default(PENDING)
+  runtime   Int? // milliseconds
+  memory    Int? // KB
+  createdAt DateTime         @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  problemId Int
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  contestId Int?
+  contest   Contest? @relation(fields: [contestId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, status])
+  @@index([studentId, problemId])
+}
+
+model Contest {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String   @default("")
+  startTime   DateTime
+  endTime     DateTime
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  problems    ContestProblem[]
+  submissions CodingSubmission[]
+
+  @@index([startTime, endTime])
+}
+
+model ContestProblem {
+  id        Int @id @default(autoincrement())
+  order     Int @default(0)
+  points    Int @default(0)
+
+  contestId Int
+  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  problemId Int
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, problemId])
+}
+
+model UserStats {
+  id               Int  @id @default(autoincrement())
+  xp               Int  @default(0)
+  problemsSolved   Int  @default(0)
+  totalSubmissions Int  @default(0)
+  streak           Int  @default(0)
+  rank             Rank @default(BEGINNER)
+
+  studentId String  @unique
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model UserBadge {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String @default("")
+  icon        String @default("")
+  threshold   Int    @default(0)
+
+  recipients Student[]
+}
+
+model DailyChallenge {
+  id         Int      @id @default(autoincrement())
+  date       DateTime @unique
+  xpReward   Int      @default(15)
+
+  problemId Int
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  participants Student[]
+}
+
+model CodingStreak {
+  id    Int      @id @default(autoincrement())
+  date  DateTime
+  count Int      @default(1)
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  problemId Int
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, date])
+}
+
+// ===== HubNest integration (Phase 1 foundation) =====
+
+// Maps a course to canonical JobNest skills (peeldb.Skill.slug). This is the
+// bridge that lets a completed course update a JobNest candidate profile and
+// drive job-match re-scoring / skill-gap recommendations.
+model CourseSkill {
+  id        Int    @id @default(autoincrement())
+  skillSlug String // == peeldb.Skill.slug (canonical taxonomy key)
+  weight    Int    @default(100) // contribution 0-100 toward the verified skill
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, skillSlug])
+  @@index([skillSlug])
+}
+
+model ChatMessage {
+  id           Int      @id @default(autoincrement())
+  senderId     String
+  senderRole   String   // student | teacher
+  receiverId   String
+  receiverRole String   // student | teacher
+  courseId     Int
+  message      String
+  createdAt    DateTime @default(now())
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
+// JIT-provisioned local mirror of a JobNest identity. SkillNest no longer owns
+// identity: it trusts the JobNest SSO token and keys everything to
+// jobnestUserId (peeldb.User.id). Legacy Student/Teacher/Parent rows become
+// role-scoped profiles linked to this, not standalone login accounts.
+model SkillNestProfile {
+  id            Int      @id @default(autoincrement())
+  jobnestUserId String   @unique // peeldb.User.id (as string, matches SSO `sub`)
+  email         String?
+  username      String?
+  name          String   @default("")
+  role          String   @default("student") // student|teacher|parent|admin (LMS-side label)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastLoginAt   DateTime?
+}
+

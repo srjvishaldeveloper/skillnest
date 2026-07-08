@@ -1,0 +1,42 @@
+
+> skillnest-lms@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.5
+  - Local:        http://localhost:3000
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 7.3s
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 767ms (141 modules)
+ ○ Compiling /courses ...
+ ✓ Compiled /courses in 9.8s (669 modules)
+ ✓ Compiled in 1378ms (289 modules)
+ GET /courses 200 in 13168ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 2.4s (410 modules)
+ GET /favicon.ico 200 in 2711ms
+ ○ Compiling /teacher ...
+ ✓ Compiled /teacher in 2.3s (1442 modules)
+ ○ Compiling /list/students ...
+ ✓ Compiled /list/students in 4.1s (2245 modules)
+ ○ Compiling /instructor/analytics ...
+ ✓ Compiled /instructor/analytics in 543ms (2249 modules)
+ ○ Compiling /browse ...
+ ✓ Compiled /browse in 1237ms (2393 modules)
+ ✓ Compiled /list/classes in 450ms (2397 modules)
+ ○ Compiling /api/auth/logout ...
+ ✓ Compiled /api/auth/logout in 966ms (1209 modules)
+ POST /api/auth/logout 307 in 1223ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1512ms (2285 modules)
+ POST / 200 in 1911ms
+ ✓ Compiled /signin in 422ms (2277 modules)
+ ✓ Compiled /register in 416ms (2283 modules)
+ GET /register 200 in 748ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 2s (1219 modules)
+ GET /favicon.ico 200 in 2414ms
+ GET /register 200 in 151ms
+ GET /favicon.ico 200 in 157ms

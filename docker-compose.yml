@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  postgress:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-skillnest_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_strong_password}
+      POSTGRES_DB: ${POSTGRES_DB:-skillnest_lms}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  judge0-db:
+    image: postgres:16-alpine
+    container_name: judge0_db
+    environment:
+      POSTGRES_DB: judge0
+      POSTGRES_USER: judge0
+      POSTGRES_PASSWORD: judge0_db_pass
+    ports:
+      - '5434:5432'
+    volumes:
+      - judge0_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  judge0-redis:
+    image: redis:7-alpine
+    container_name: judge0_redis
+    command: ["redis-server", "--requirepass", "judge0_redis_pass"]
+    ports:
+      - '6380:6379'
+    restart: unless-stopped
+
+  judge0-server:
+    image: judge0/judge0:latest-extra-dev
+    container_name: judge0_server
+    command: ["./scripts/server"]
+    ports:
+      - '2358:2358'
+    privileged: true
+    user: root
+    volumes:
+      - ./judge0.conf:/judge0.conf:ro
+    depends_on:
+      judge0-db:
+        condition: service_started
+      judge0-redis:
+        condition: service_started
+    restart: unless-stopped
+
+  judge0-worker:
+    image: judge0/judge0:latest-extra-dev
+    container_name: judge0_worker
+    command: ["./scripts/workers"]
+    privileged: true
+    user: root
+    volumes:
+      - ./judge0.conf:/judge0.conf:ro
+    depends_on:
+      judge0-db:
+        condition: service_started
+      judge0-redis:
+        condition: service_started
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: nextjs_app
+    ports:
+      - '3000:3000'
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-skillnest_user}:${POSTGRES_PASSWORD:-change_me_strong_password}@postgress:5432/${POSTGRES_DB:-skillnest_lms}
+    depends_on:
+      - postgress
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  judge0_db_data:
